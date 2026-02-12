@@ -40,13 +40,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [dbUser]);
 
-  // if (status === "loading" || loading)
-  //   return (
-  //     <div className="flex items-center justify-center w-full h-screen">
-  //       <Loader2 className="animate-spin" size={30} />
-  //     </div>
-  //   );
-
   return (
     <div>
       <Navbar />
