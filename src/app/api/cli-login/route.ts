@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       id: user._id,
       username: user.username,
     },
-    process.env.JWT_SECRET!,
+    "mysecretshhh",
     { expiresIn: "7d" },
   );
 

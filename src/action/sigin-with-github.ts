@@ -2,8 +2,8 @@
 
 import { signIn } from "@/auth";
 
-const signInWithGithub = async () => {
-  await signIn("github", { redirectTo: "/" });
+const signInWithGithub = async ({ username }: { username: string }) => {
+  await signIn("github", { redirectTo: "/", username });
 };
 
 export default signInWithGithub;

@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import signInWithGoogle from "../action/sigin-with-google";
 
-export default function LoginWithGoogle() {
+export default function LoginWithGoogle({ username }: { username: string }) {
   return (
     <Button
-      onClick={() => signInWithGoogle()}
+      onClick={() => signInWithGoogle({ username })}
       variant="outline"
       type="submit"
       className="w-full"

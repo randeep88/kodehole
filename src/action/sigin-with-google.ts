@@ -2,8 +2,8 @@
 
 import { signIn } from "@/auth";
 
-const signInWithGoogle = async () => {
-  await signIn("google", { redirectTo: "/" });
+const signInWithGoogle = async ({ username }: { username: string }) => {
+  await signIn("google", { redirectTo: "/", username });
 };
 
 export default signInWithGoogle;

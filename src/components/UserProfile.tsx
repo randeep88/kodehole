@@ -268,7 +268,8 @@ const UserProfile = ({ username }: { username: string }) => {
             ) : (
               <div className="grid gap-4 w-full h-full">
                 <div>
-                  {!filteredOrbits?.length ? (
+                  {orbits?.data?.orbits?.length > 0 &&
+                  !filteredOrbits?.length ? (
                     <div className="lg:min-h-90 flex items-center justify-center">
                       <Empty>
                         <EmptyHeader>

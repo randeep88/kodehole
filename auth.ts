@@ -41,7 +41,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!user) {
-            // ✅ Custom error throw karo
             throw new UserNotFoundError();
           }
 
@@ -51,7 +50,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
 
           if (!isMatch) {
-            // ✅ Custom error throw karo
             throw new InvalidPasswordError();
           }
 
@@ -62,12 +60,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             usernameSet: user.usernameSet ?? true,
           };
         } catch (error) {
-          // ✅ Agar custom error hai toh re-throw karo
           if (error instanceof CredentialsSignin) {
             throw error;
           }
-
-          // ✅ Database errors ke liye generic error
           console.error("Database error:", error);
           throw new InvalidLoginError();
         }
@@ -96,20 +91,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
 
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       try {
-        // Sirf OAuth providers ke liye
         if (account?.provider === "google" || account?.provider === "github") {
           await connectDB();
-
-          console.log("Checking user:", user.email); // Debug log
 
           let existingUser = await User.findOne({
             email: user.email,
           });
 
           if (!existingUser) {
-            // Naya user create karo
             const newUser = await User.create({
               email: user.email,
               name: user.name,
@@ -118,19 +109,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               image: user.image,
             });
 
-            // User object update karo
             user.id = newUser._id.toString();
             // @ts-ignore
             user.username = newUser.username;
             // @ts-ignore
             user.usernameSet = false;
+            // @ts-ignore
+            user.isNewUser = true;
           } else {
-            // Existing user ka data set karo
             user.id = existingUser._id.toString();
             // @ts-ignore
             user.username = existingUser.username;
             // @ts-ignore
             user.usernameSet = existingUser.usernameSet ?? true;
+            // @ts-ignore
+            user.isNewUser = !existingUser.usernameSet;
           }
         }
 
@@ -146,21 +139,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     },
 
-    async jwt({ token, user }) {
-      await connectDB();
-      const dbUser = await User.findOne({ email: token.email });
-
-      if (!dbUser) {
-        return null;
-      }
-
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         // @ts-ignore
         token.username = user.username;
         // @ts-ignore
         token.usernameSet = user.usernameSet ?? true;
-      } else {
+        // @ts-ignore
+        token.isNewUser = user.isNewUser ?? false;
+      } else if (trigger === "update") {
         await connectDB();
         const dbUser = await User.findOne({ email: token.email });
 
@@ -168,6 +156,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.id = dbUser._id.toString();
           token.username = dbUser.username;
           token.usernameSet = dbUser.usernameSet ?? true;
+          token.isNewUser = false;
         }
       }
 
@@ -182,6 +171,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.username = token.username;
         // @ts-ignore
         session.user.usernameSet = token.usernameSet;
+        // @ts-ignore
+        session.user.isNewUser = token.isNewUser ?? false;
       }
 
       return session;

@@ -21,12 +21,10 @@ import {
 import {
   Check,
   Copy,
-  InfoIcon,
   Key,
   Loader2,
   LogOut,
   Orbit,
-  Settings,
   TriangleAlert,
   User,
   X,
@@ -60,7 +58,7 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild className="cursor-pointer">
           <Avatar>
-            <AvatarImage src={user?.image!} alt={user?.name!} />
+            <AvatarImage src={dbUser?.data?.image!} alt={dbUser?.data?.name!} />
             <AvatarFallback className="text-xs">
               {dbUser?.data?.name?.split(" ")[0][0]}
               {dbUser?.data?.name?.split(" ")[1][0]}
@@ -71,7 +69,10 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
           <DropdownMenuGroup>
             <DropdownMenuLabel className="flex items-center gap-2">
               <Avatar>
-                <AvatarImage src={user?.image!} alt={user?.name!} />
+                <AvatarImage
+                  src={dbUser?.data?.image!}
+                  alt={dbUser?.data?.name!}
+                />
                 <AvatarFallback className="text-xs">
                   {dbUser?.data?.name?.split(" ")[0][0]}
                   {dbUser?.data?.name?.split(" ")[1][0]}
@@ -96,12 +97,7 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
               <Orbit />
               Orbits
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push(`/${user?.username}/settings`)}
-            >
-              <Settings />
-              Settings
-            </DropdownMenuItem>
+
             <DropdownMenuItem onClick={() => setOpenToken(true)}>
               <Key />
               Access Token

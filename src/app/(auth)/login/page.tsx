@@ -15,10 +15,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -31,8 +31,21 @@ type FormValues = {
 const LoginPage = () => {
   const [eyeOpen, setEyeOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
 
+  const { data: session, status } = useSession() as any;
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      // @ts-ignore
+      if (!session.user.usernameSet || session.user.isNewUser) {
+        router.push(`/setup-username?email=${session.user?.email}`);
+      } else {
+        router.push(`/${session?.user?.username}`);
+      }
+    }
+  }, [session, status, router]);
 
   const {
     register,
@@ -43,6 +56,7 @@ const LoginPage = () => {
   const handleLogin = async (data: FormValues) => {
     try {
       setLoading(true);
+      setUsername(data.username);
       const result = await signIn("credentials", {
         username: data.username,
         password: data.password,
@@ -159,8 +173,8 @@ const LoginPage = () => {
             </Button>
             <Separator className="my-3" />
             <div className="w-full space-y-2">
-              <LoginWithGoogle />
-              <LoginWithGithub />
+              <LoginWithGoogle username={username} />
+              <LoginWithGithub username={username} />
             </div>
           </CardFooter>
         </form>

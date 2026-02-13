@@ -19,8 +19,9 @@ import { useForm } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff } from "lucide-react";
 import { useUser } from "@/src/hooks/useUser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export type FormValues = {
   name: string;
@@ -32,7 +33,21 @@ export type FormValues = {
 const RegisterPage = () => {
   const [eyeOpen, setEyeOpen] = useState(false);
   const { register: registerUser, isRegistering } = useUser();
+  const [username, setUsername] = useState("");
+
+  const { data: session, status } = useSession() as any;
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      // @ts-ignore
+      if (!session.user.usernameSet || session.user.isNewUser) {
+        router.push(`/setup-username?email=${session.user?.email}`);
+      } else {
+        router.push(`/${session?.user?.username}`);
+      }
+    }
+  }, [session, status, router]);
 
   const {
     register,
@@ -42,6 +57,7 @@ const RegisterPage = () => {
 
   const handleRegister = async (data: FormValues) => {
     try {
+      setUsername(data.username);
       registerUser(
         {
           name: data.name,
@@ -195,8 +211,8 @@ const RegisterPage = () => {
             </Button>
             <Separator className="my-3" />
             <div className="w-full space-y-2">
-              <LoginWithGoogle />
-              <LoginWithGithub />
+              <LoginWithGoogle username={username} />
+              <LoginWithGithub username={username} />
             </div>
           </CardFooter>
         </form>

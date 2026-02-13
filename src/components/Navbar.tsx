@@ -27,6 +27,7 @@ const Navbar = () => {
   const isOverviewPath = pathname === "/" + user?.username && !url.get("tab");
 
   const isOrbitsPath = url.get("tab") === "orbits";
+  const isHomePagePath = pathname === "/";
 
   const isOrbitAndOverviewPath = isOrbitsPath || isOverviewPath;
 
@@ -50,26 +51,32 @@ const Navbar = () => {
         </Link>
 
         <div className="flex h-5 items-center">
-          <div className="flex items-center gap-3">
-            <Button size="sm" variant="ghost" asChild>
-              <Link href={`/${user?.username}?tab=orbits`}>Orbits</Link>
-            </Button>
-            <Button size="sm" variant="ghost" asChild>
-              <Link href={`/${user?.username}/settings`}>Settings</Link>
-            </Button>
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <Button size="icon-sm" variant="outline" asChild>
-                  <Link href={`/${user?.username}/create-orbit`}>
-                    <Orbit />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Create Orbit</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          {isHomePagePath ? (
+            <div>
+              <Button size="sm" variant="ghost" asChild>
+                <Link href={`/${user?.username}`}>Profile</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Button size="sm" variant="ghost" asChild>
+                <Link href={`/${user?.username}?tab=orbits`}>Orbits</Link>
+              </Button>
+
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Button size="icon-sm" variant="outline" asChild>
+                    <Link href={`/${user?.username}/create-orbit`}>
+                      <Orbit />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create Orbit</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
           <Separator
             orientation="vertical"
             className="mx-5 border opacity-70"

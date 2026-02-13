@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import signInWithGithub from "../action/sigin-with-github";
 
-export default function LoginWithGithub() {
+export default function LoginWithGithub({ username }: { username: string }) {
   return (
     <Button
-      onClick={() => signInWithGithub()}
+      onClick={() => signInWithGithub({ username })}
       variant="outline"
       type="submit"
       className="w-full"

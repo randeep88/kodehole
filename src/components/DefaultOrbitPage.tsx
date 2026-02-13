@@ -22,9 +22,11 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useUser } from "../hooks/useUser";
 
 const DefaultOrbitPage = ({ orbit }: { orbit: string }) => {
   const { user, isLoading } = useAuth();
+  const { user: dbUser } = useUser(user?.username!);
   const { orbit: orbitData, isLoadingOrbit } = useOrbits(orbit);
   const [copied, setCopied] = useState(false);
   const [copiedId, setCopiedId] = useState("");
@@ -36,10 +38,10 @@ const DefaultOrbitPage = ({ orbit }: { orbit: string }) => {
           <Skeleton className="w-7 h-7 rounded-full" />
         ) : (
           <Avatar className="w-7 h-7">
-            <AvatarImage src={user?.image!} alt={user?.name!} />
+            <AvatarImage src={dbUser?.data?.image!} alt={dbUser?.data?.name!} />
             <AvatarFallback className="text-xs">
-              {user?.name?.split(" ")[0][0]}
-              {user?.name?.split(" ")[1][0]}
+              {dbUser?.data?.name?.split(" ")[0][0]}
+              {dbUser?.data?.name?.split(" ")[1][0]}
             </AvatarFallback>
           </Avatar>
         )}

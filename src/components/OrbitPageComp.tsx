@@ -2,30 +2,28 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useSession } from "next-auth/react";
 import { useOrbits } from "../hooks/useOrbits";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { formatDate } from "../lib/formatDate";
+import { useAuth } from "../context/AuthContext";
+import { useUser } from "../hooks/useUser";
 
 const OrbitPageComp = ({ orbit }: { orbit: any }) => {
-  const { data: session } = useSession() as any;
+  const { user, isLoading } = useAuth();
+  const { user: dbUser } = useUser(user?.username!);
   const { snapshots, isLoadingSnapshots } = useOrbits(orbit?.name);
-
-  if (isLoadingSnapshots) {
-    return <div>Loading snapshots...</div>;
-  }
 
   return (
     <div className="pt-10 w-4xl mx-auto">
       <div className="text-xl font-semibold flex items-center gap-3">
         <Avatar className="w-7 h-7">
-          <AvatarImage src={session?.user?.image!} alt={session?.user?.name!} />
+          <AvatarImage src={dbUser?.data?.image!} alt={dbUser?.data?.name!} />
           <AvatarFallback className="text-xs">
-            {session?.user?.name?.split(" ")[0][0]}
-            {session?.user?.name?.split(" ")[1][0]}
+            {dbUser?.data?.name?.split(" ")[0][0]}
+            {dbUser?.data?.name?.split(" ")[1][0]}
           </AvatarFallback>
         </Avatar>
         {orbit?.name}
@@ -36,9 +34,10 @@ const OrbitPageComp = ({ orbit }: { orbit: any }) => {
       <Card className="h-fit p-0 overflow-hidden shadow-none">
         <CardContent className="p-0 h-fit">
           <div className="py-4 bg-card px-5 flex items-center justify-between">
-            <div></div>
+            <div>Snapshots</div>
             <div className="text-muted-foreground text-xs">
-              {snapshots?.length} snapshots
+              {snapshots?.length}
+              {snapshots?.length === 1 ? " snapshot" : " snapshots"}
             </div>
           </div>
           {snapshots?.map((snapshot: any) => (
@@ -50,7 +49,7 @@ const OrbitPageComp = ({ orbit }: { orbit: any }) => {
                   asChild
                 >
                   <Link
-                    href={`/${session?.user?.username}/orbits/${orbit.name}/s${snapshot.index}?o=${orbit.name}`}
+                    href={`/${user?.username}/orbits/${orbit.name}/s${snapshot.index}?o=${orbit.name}`}
                   >
                     S{snapshot.index}
                   </Link>

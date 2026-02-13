@@ -20,6 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/src/context/AuthContext";
+import { useUser } from "@/src/hooks/useUser";
 
 type NodeType = {
   name: string;
@@ -30,20 +32,25 @@ type NodeType = {
 const getFileIcon = (filename: string): string => {
   const ext = filename.split(".").pop()?.toLowerCase() || "";
 
-  const getMaterialIcon = (filename: string) => {
-    const name = filename.toLowerCase();
-
-    if (name.includes("tsconfig")) return "json";
-    if (name.endsWith(".ts")) return "typescript";
-    if (name.endsWith(".tsx")) return "typescript";
-    if (name.endsWith(".js")) return "javascript";
-    if (name.endsWith(".json")) return "json";
-
-    return "file";
+  const iconMap: { [key: string]: string } = {
+    ts: "vscode-icons:file-type-typescript",
+    tsx: "vscode-icons:file-type-typescript",
+    js: "vscode-icons:file-type-js",
+    jsx: "vscode-icons:file-type-reactjs",
+    py: "vscode-icons:file-type-python",
+    vue: "vscode-icons:file-type-vue",
+    svelte: "vscode-icons:file-type-svelte",
+    go: "vscode-icons:file-type-go",
+    rs: "vscode-icons:file-type-rust",
+    json: "vscode-icons:file-type-json",
+    html: "vscode-icons:file-type-html",
+    css: "vscode-icons:file-type-css",
+    scss: "vscode-icons:file-type-scss",
+    md: "vscode-icons:file-type-markdown",
   };
 
-  const iconUrl = `https://raw.githubusercontent.com/material-extensions/vscode-material-icon-theme/master/icons/${getMaterialIcon(filename)}.svg`;
-  return iconUrl;
+  const iconName = iconMap[ext] || "vscode-icons:default-file";
+  return `https://api.iconify.design/${iconName}.svg`;
 };
 
 function useDebounce<T>(value: T, delay: number = 350): T {
@@ -69,8 +76,9 @@ export default function ProjectUI({
   orbit: string;
   snapshot: string;
 }) {
-  const { data: session } = useSession() as any;
   const { theme } = useTheme();
+  const { user, isLoading } = useAuth();
+  const { user: dbUser } = useUser(user?.username!);
 
   const [path, setPath] = useState<string>(".kodehole.json");
 
@@ -160,8 +168,11 @@ export default function ProjectUI({
         <div className="p-3 border-b bg-background flex items-center gap-3 font-medium">
           <div>
             <Avatar className="w-7 h-7">
-              <AvatarImage src={session?.user?.image} />
-              <AvatarFallback>{session?.user?.name}</AvatarFallback>
+              <AvatarImage src={dbUser?.data?.image} />
+              <AvatarFallback className="text-xs">
+                {dbUser?.data?.name?.split(" ")[0][0]}
+                {dbUser?.data?.name?.split(" ")[1][0]}
+              </AvatarFallback>
             </Avatar>
           </div>
           <div>
