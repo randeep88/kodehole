@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { r2 } from "@/src/lib/r2";
 import { codeToHtml } from "shiki";
-import { getUserFromRequest } from "@/src/lib/auth";
-import { getOrbitPath } from "@/src/lib/storage";
 import { auth } from "@/auth";
+import Snapshot from "@/src/models/Snapshot";
+import connectDB from "@/src/lib/db";
 
 const LANG_MAP: Record<string, string> = {
   js: "javascript",
@@ -21,33 +21,54 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ orbit: string }> },
 ) {
-  const { orbit } = await params;
-  const session = (await auth()) as any;
+  await connectDB();
 
+  const session = (await auth()) as any;
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { orbit } = await params;
   const { searchParams } = new URL(req.url);
-  const snapshot = searchParams.get("snapshot")!;
+
+  const snapshotName = searchParams.get("snapshot");
   const filePath = searchParams.get("path");
-  const theme = searchParams.get("theme")!;
+  const theme = searchParams.get("theme") || "dark";
 
-  if (!filePath) {
-    return NextResponse.json({ error: "File path missing" }, { status: 400 });
+  if (!snapshotName || !filePath) {
+    return NextResponse.json(
+      { error: "Missing snapshot or file path" },
+      { status: 400 },
+    );
   }
 
-  const orbitPath = getOrbitPath(session?.user?.username, orbit);
-  const snapshotsDir = path.join(orbitPath, snapshot);
+  const snapshot = await Snapshot.findOne({
+    index: Number(snapshotName.replace("s", "")),
+  });
 
-  const fullPath = path.join(snapshotsDir, filePath);
-
-  if (!fs.existsSync(fullPath)) {
-    return NextResponse.json({ error: "File not found" }, { status: 404 });
+  if (!snapshot) {
+    return NextResponse.json({ error: "Snapshot not found" }, { status: 404 });
   }
 
-  const code = fs.readFileSync(fullPath, "utf-8");
-  const ext = filePath?.split(".").pop() || "txt";
+  const key = `${session.user.username}/${orbit}/${snapshotName}/${filePath}`;
+
+  const object = await r2.send(
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    }),
+  );
+
+  const stream = object.Body as any;
+  const chunks: Buffer[] = [];
+
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+
+  const code = Buffer.concat(chunks).toString("utf-8");
+
+  const ext = filePath.split(".").pop() || "txt";
   const lang = LANG_MAP[ext] || "text";
 
   const html = await codeToHtml(code, {
@@ -57,7 +78,7 @@ export async function GET(
 
   return NextResponse.json({
     orbit,
-    snapshot,
+    snapshot: snapshotName,
     path: filePath,
     html,
   });

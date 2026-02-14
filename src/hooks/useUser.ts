@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { FormValues } from "../app/(auth)/signup/page";
 import { toast } from "sonner";
 
 export const useUser = (username?: string | undefined) => {
+  const queryClient = useQueryClient();
   const { data: user, isPending } = useQuery({
     queryKey: ["user", username],
     enabled: !!username,
@@ -20,6 +21,7 @@ export const useUser = (username?: string | undefined) => {
     },
     onSuccess: () => {
       toast.success("User registered successfully");
+      queryClient.invalidateQueries({ queryKey: ["user", username] });
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -43,6 +45,7 @@ export const useUser = (username?: string | undefined) => {
       },
       onSuccess: (data) => {
         toast.success(data.data.message);
+        queryClient.invalidateQueries({ queryKey: ["user", username] });
       },
       onError: () => {
         toast.error("Something went wrong");

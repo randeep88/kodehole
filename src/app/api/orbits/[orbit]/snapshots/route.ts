@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
 import { getUserFromRequest } from "@/src/lib/auth";
+import connectDB from "@/src/lib/db";
 import AdmZip from "adm-zip";
 import Orbit from "@/src/models/Orbit";
 import Snapshot from "@/src/models/Snapshot";
-import connectDB from "@/src/lib/db";
+import { uploadToR2 } from "@/src/lib/r2-upload";
 
 export async function POST(
   req: NextRequest,
@@ -21,35 +20,25 @@ export async function POST(
 
   const orbitName = (await params).orbit;
 
+  const orbit = await Orbit.findOne({
+    name: orbitName,
+    owner: user._id,
+  });
+
+  if (!orbit) {
+    return NextResponse.json(
+      {
+        error: "Orbit not found. Use: kdh create <orbit-name>",
+      },
+      { status: 404 },
+    );
+  }
+
   const formData = await req.formData();
   const file = formData.get("file") as File;
 
   if (!file) {
     return NextResponse.json({ error: "Zip file missing" }, { status: 400 });
-  }
-
-  let orbit = await Orbit.findOne({
-    name: orbitName,
-    owner: user?._id,
-  });
-
-  const orbitStoragePath = path.join(
-    process.cwd(),
-    "data",
-    user?.username,
-    orbitName,
-  );
-
-  if (!orbit) {
-    return NextResponse.json(
-      {
-        error:
-          "Orbit not found, try creating it first using kdh create <your-orbit-name> or go to http://localhost:3000/" +
-          user?.username +
-          "/create-orbit",
-      },
-      { status: 404 },
-    );
   }
 
   const snapshotCount = await Snapshot.countDocuments({
@@ -59,30 +48,33 @@ export async function POST(
   const snapshotIndex = snapshotCount + 1;
   const snapshotName = `s${snapshotIndex}`;
 
-  const snapshotStoragePath = path.join(orbitStoragePath, snapshotName);
-
-  fs.mkdirSync(snapshotStoragePath, { recursive: true });
-
-  /* ---------------- EXTRACT ZIP ---------------- */
-
   const buffer = Buffer.from(await file.arrayBuffer());
   const zip = new AdmZip(buffer);
-  zip.extractAllTo(snapshotStoragePath, true);
 
-  /* ---------------- CREATE SNAPSHOT DOC ---------------- */
+  const entries = zip.getEntries();
+
+  for (const entry of entries) {
+    if (!entry.isDirectory) {
+      const fileBuffer = entry.getData();
+
+      const key = `${user.username}/${orbitName}/${snapshotName}/${entry.entryName}`;
+
+      await uploadToR2(key, fileBuffer);
+    }
+  }
 
   const snapshot = await Snapshot.create({
     orbit: orbit._id,
     index: snapshotIndex,
-    storagePath: snapshotStoragePath,
+    storagePath: `${user.username}/${orbitName}/${snapshotName}`,
+    createdAt: new Date(),
   });
 
   orbit.snapshots.push(snapshot._id);
+  orbit.updatedAt = new Date();
   await orbit.save();
 
-  /* ---------------- RESPONSE ---------------- */
-
-  const url = `http://localhost:3000/${user.username}/orbits/${orbitName}/${snapshotName}?o=${orbitName}`;
+  const url = `/${user.username}/orbits/${orbitName}/${snapshotName}`;
 
   return NextResponse.json({
     snapshot: snapshotName,
