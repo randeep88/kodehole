@@ -19,7 +19,7 @@ import { useUser } from "../hooks/useUser";
 
 const Navbar = () => {
   const { user, isLoggedIn, isLoading } = useAuth();
-  const { user: dbUser } = useUser(user?.username);
+  const { user: dbUser, isPending } = useUser(user?.username);
 
   const url = useSearchParams();
   const pathname = usePathname();
@@ -88,7 +88,7 @@ const Navbar = () => {
             className="mx-5 border opacity-70"
           />
 
-          {isLoading ? (
+          {isLoading || isPending ? (
             <Skeleton className="w-8 h-8 rounded-full" />
           ) : (
             <div>
@@ -109,29 +109,38 @@ const Navbar = () => {
         </div>
       </div>
       {isOrbitAndOverviewPath && (
-        <div className="w-full mt-3 flex items-center gap-5">
-          <div className={`flex flex-col relative items-center gap-2`}>
-            <Button size="sm" variant="ghost" asChild>
-              <Link href={`/${user?.username}`}>
-                <BookOpen />
-                Overview
-              </Link>
-            </Button>
-            {isOverviewPath && (
-              <span className="mx-5 absolute -bottom-2 dark:bg-white bg-black opacity-70 h-0.5 w-full"></span>
-            )}
-          </div>
-          <div className={`flex flex-col relative items-center gap-2`}>
-            <Button size="sm" variant="ghost" asChild>
-              <Link href={`/${user?.username}?tab=orbits`}>
-                <Orbit />
-                Orbits
-              </Link>
-            </Button>
-            {isOrbitsPath && (
-              <span className="mx-5 absolute -bottom-2 dark:bg-white bg-black opacity-70 h-0.5 w-full"></span>
-            )}
-          </div>
+        <div>
+          {isLoading || isPending ? (
+            <div className="w-full mt-3 flex items-center gap-5">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="w-8 h-8 rounded-full" />
+            </div>
+          ) : (
+            <div className="w-full mt-3 flex items-center gap-5">
+              <div className={`flex flex-col relative items-center gap-2`}>
+                <Button size="sm" variant="ghost" asChild>
+                  <Link href={`/${user?.username}`}>
+                    <BookOpen />
+                    Overview
+                  </Link>
+                </Button>
+                {isOverviewPath && (
+                  <span className="mx-5 absolute -bottom-2 dark:bg-white bg-black opacity-70 h-0.5 w-full"></span>
+                )}
+              </div>
+              <div className={`flex flex-col relative items-center gap-2`}>
+                <Button size="sm" variant="ghost" asChild>
+                  <Link href={`/${user?.username}?tab=orbits`}>
+                    <Orbit />
+                    Orbits
+                  </Link>
+                </Button>
+                {isOrbitsPath && (
+                  <span className="mx-5 absolute -bottom-2 dark:bg-white bg-black opacity-70 h-0.5 w-full"></span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

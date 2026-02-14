@@ -64,8 +64,8 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
           <Avatar>
             <AvatarImage src={userImage!} alt={crrUser?.name!} />
             <AvatarFallback className="text-xs">
-              {crrUser?.name?.split(" ")[0][0]}
-              {crrUser?.name?.split(" ")[1][0]}
+              {user?.name?.split(" ")[0][0]}
+              {user?.name?.split(" ")[1][0]}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
@@ -75,16 +75,16 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
               <Avatar>
                 <AvatarImage src={userImage!} alt={crrUser?.name!} />
                 <AvatarFallback className="text-xs">
-                  {crrUser?.name?.split(" ")[0][0]}
-                  {crrUser?.name?.split(" ")[1][0]}
+                  {user?.name?.split(" ")[0][0]}
+                  {user?.name?.split(" ")[1][0]}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-1 flex-col">
                 <span className="text-popover-foreground">
-                  {dbUser?.data?.username}
+                  {user?.username}
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  {dbUser?.data?.name}
+                  {user?.name}
                 </span>
               </div>
             </DropdownMenuLabel>
