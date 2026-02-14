@@ -55,10 +55,10 @@ const UserProfile = ({ username }: { username: string }) => {
             <Skeleton className="w-70 h-70 rounded-full" />
           ) : (
             <Avatar className="w-70 h-70">
-              <AvatarImage src={dbUser?.data.image!} />
+              <AvatarImage src={user?.image!} />
               <AvatarFallback className="text-6xl">
-                {dbUser?.data.name?.split(" ")[0][0]}
-                {dbUser?.data.name?.split(" ")[1][0]}
+                {user?.name?.split(" ")[0][0]}
+                {user?.name?.split(" ")[1][0]}
               </AvatarFallback>
             </Avatar>
           )}

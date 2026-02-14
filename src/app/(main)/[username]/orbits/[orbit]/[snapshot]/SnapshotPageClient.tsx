@@ -15,8 +15,9 @@ const SnapshotPageClient = ({
 
   if (isLoadingTree) {
     return (
-      <div className="flex items-center justify-center w-full h-full">
+      <div className="flex items-center justify-center gap-2 w-full h-[calc(100vh-70px)]">
         <Loader2 className="animate-spin" />
+        Loading snapshot...
       </div>
     );
   }
