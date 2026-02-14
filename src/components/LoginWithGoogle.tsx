@@ -7,7 +7,7 @@ export default function LoginWithGoogle({ username }: { username: string }) {
     <Button
       onClick={() => signInWithGoogle({ username })}
       variant="outline"
-      type="submit"
+      type="button"
       className="w-full"
     >
       <Image src="/google.svg" alt="Google" width={15} height={15} />

@@ -7,7 +7,7 @@ export default function LoginWithGithub({ username }: { username: string }) {
     <Button
       onClick={() => signInWithGithub({ username })}
       variant="outline"
-      type="submit"
+      type="button"
       className="w-full"
     >
       <Image src="/github_dark.svg" alt="Github" width={15} height={15} />

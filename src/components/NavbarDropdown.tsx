@@ -53,15 +53,19 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
     });
   };
 
+  const crrUser = user || dbUser?.data;
+
+  const userImage = user?.image || dbUser?.data?.image;
+
   return (
     <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild className="cursor-pointer">
           <Avatar>
-            <AvatarImage src={dbUser?.data?.image!} alt={dbUser?.data?.name!} />
+            <AvatarImage src={userImage!} alt={crrUser?.name!} />
             <AvatarFallback className="text-xs">
-              {dbUser?.data?.name?.split(" ")[0][0]}
-              {dbUser?.data?.name?.split(" ")[1][0]}
+              {crrUser?.name?.split(" ")[0][0]}
+              {crrUser?.name?.split(" ")[1][0]}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
@@ -69,13 +73,10 @@ const NavbarDropdown = ({ user, dbUser }: { user: any; dbUser: any }) => {
           <DropdownMenuGroup>
             <DropdownMenuLabel className="flex items-center gap-2">
               <Avatar>
-                <AvatarImage
-                  src={dbUser?.data?.image!}
-                  alt={dbUser?.data?.name!}
-                />
+                <AvatarImage src={userImage!} alt={crrUser?.name!} />
                 <AvatarFallback className="text-xs">
-                  {dbUser?.data?.name?.split(" ")[0][0]}
-                  {dbUser?.data?.name?.split(" ")[1][0]}
+                  {crrUser?.name?.split(" ")[0][0]}
+                  {crrUser?.name?.split(" ")[1][0]}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-1 flex-col">
