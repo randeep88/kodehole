@@ -14,6 +14,8 @@ export const GET = async (
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  console.log("session", session);
+
   const user = await User.findOne({ username });
 
   if (!user) {

@@ -1,7 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+::selection {
+  background-color: black;
+  color: white;
+}
 
+.dark ::selection {
+  background-color: white;
+  color: black;
+}
 .shiki {
   background: transparent !important;
 }

@@ -53,6 +53,20 @@ export const useUser = (username?: string | undefined) => {
     },
   );
 
+  const { mutate: updateBio, isPending: isUpdatingBio } = useMutation({
+    mutationFn: async ({ bio }: { bio: string }) => {
+      const res = axios.patch(`/api/users/update-bio`, { bio });
+      return res;
+    },
+    onSuccess: (data) => {
+      toast.success(data.data.message);
+      queryClient.invalidateQueries({ queryKey: ["user", username] });
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+  });
+
   return {
     user,
     isPending,
@@ -60,5 +74,7 @@ export const useUser = (username?: string | undefined) => {
     isRegistering,
     udpateUsername,
     isUpdatingUsername,
+    updateBio,
+    isUpdatingBio,
   };
 };

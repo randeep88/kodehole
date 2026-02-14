@@ -5,7 +5,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "../hooks/useUser";
 import { Card, CardContent } from "@/components/ui/card";
 import { useOrbits } from "../hooks/useOrbits";
-import { Orbit, Pencil, Plus, SearchAlert, SearchIcon } from "lucide-react";
+import {
+  Loader2,
+  Orbit,
+  Plus,
+  SearchAlert,
+  SearchIcon,
+  Check,
+  X,
+  Pencil,
+} from "lucide-react";
 import {
   Empty,
   EmptyContent,
@@ -22,7 +31,7 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "../lib/formatDate";
 import { useAuth } from "../context/AuthContext";
@@ -37,21 +46,58 @@ const UserProfile = ({ username }: { username: string }) => {
   const isOrbitsPath = url.get("tab") === "orbits";
   const isOverviewPath = pathname === "/" + username && !url.get("tab");
 
-  const { user: dbUser } = useUser(username);
+  const { user: dbUser, updateBio, isUpdatingBio } = useUser(username);
   const { user, isLoading } = useAuth();
   const isOwner = dbUser?.data.email === user?.email;
   const { orbits, isPending } = useOrbits();
 
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bioText, setBioText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const filteredOrbits = orbits?.data?.orbits?.filter((orbit: any) =>
     orbit.name.toLowerCase().includes(searchInput.toLowerCase()),
   );
+
+  useEffect(() => {
+    if (dbUser?.data.bio) {
+      setBioText(dbUser.data.bio);
+    }
+  }, [dbUser?.data.bio]);
+
+  useEffect(() => {
+    if (isEditingBio && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
+    }
+  }, [isEditingBio]);
+
+  const handleSave = () => {
+    updateBio(
+      { bio: bioText },
+      {
+        onSuccess: () => {
+          setIsEditingBio(false);
+        },
+      },
+    );
+  };
+
+  const handleCancel = () => {
+    setBioText(dbUser?.data.bio || "");
+    setIsEditingBio(false);
+  };
+
+  let loading = isLoading || isPending;
 
   return (
     <div className="w-full">
       <div className="flex items-start px-50 gap-20">
         {/* LEFT SIDE */}
         <div className="space-y-5 sticky top-10 self-start pt-10">
-          {isLoading ? (
+          {loading ? (
             <Skeleton className="w-70 h-70 rounded-full" />
           ) : (
             <Avatar className="w-70 h-70">
@@ -63,12 +109,12 @@ const UserProfile = ({ username }: { username: string }) => {
             </Avatar>
           )}
           <div className="flex flex-col items-start gap-2">
-            {isLoading ? (
+            {loading ? (
               <Skeleton className="w-full shrink-0 h-8" />
             ) : (
               <p className="font-medium text-2xl">{dbUser?.data.name}</p>
             )}
-            {isLoading ? (
+            {loading ? (
               <Skeleton className="w-full shrink-0 h-5 mt-2" />
             ) : (
               <p className="font-medium text-xl text-muted-foreground">
@@ -76,18 +122,6 @@ const UserProfile = ({ username }: { username: string }) => {
               </p>
             )}
           </div>
-
-          {isOwner && (
-            <div>
-              {isLoading ? (
-                <Skeleton className="w-full shrink-0 h-8" />
-              ) : (
-                <Button variant="outline" className="w-full">
-                  Edit Profile
-                </Button>
-              )}
-            </div>
-          )}
         </div>
 
         {/* RIGHT SIDE ---------------------------------------------------- */}
@@ -95,48 +129,98 @@ const UserProfile = ({ username }: { username: string }) => {
         {/* OVERVIEW PATH ------- */}
         {isOverviewPath && (
           <div className="flex flex-col items-center gap-4 w-full h-full pt-10">
-            {isLoading ? (
+            {loading ? (
               <Skeleton className="w-full shrink-0 h-40 rounded-xl" />
             ) : (
               <Card className="w-full min-h-40 relative p-0 overflow-hidden">
                 <div className="flex items-center justify-between p-1 px-4 dark:bg-card bg-neutral-50 border-b border-border/70">
                   <h1>Bio</h1>
-                  {isOwner && (
-                    <Button variant="ghost" size="icon-sm">
-                      <Pencil />
-                    </Button>
+                  {isOwner && isEditingBio ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handleCancel}
+                        disabled={isUpdatingBio}
+                      >
+                        <X />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handleSave}
+                        disabled={isUpdatingBio}
+                      >
+                        {isUpdatingBio ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check />
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    isOwner && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => {
+                          if (isOwner && !isEditingBio) {
+                            setIsEditingBio(true);
+                          }
+                        }}
+                      >
+                        <Pencil />
+                      </Button>
+                    )
                   )}
                 </div>
-                {dbUser?.data.bio ? (
-                  <CardContent>
-                    <p>{dbUser?.data.bio}</p>
+                {dbUser?.data.bio || isEditingBio ? (
+                  <CardContent className="pb-4">
+                    {isEditingBio ? (
+                      <textarea
+                        ref={textareaRef}
+                        value={bioText}
+                        onChange={(e) => {
+                          setBioText(e.target.value);
+                          if (textareaRef.current) {
+                            textareaRef.current.style.height = "auto";
+                            textareaRef.current.style.height =
+                              textareaRef.current.scrollHeight + "px";
+                          }
+                        }}
+                        className="w-full min-h-[100px] bg-transparent text-sm font-mono leading-6 resize-none focus:outline-none overflow-hidden"
+                        placeholder="Write your bio here..."
+                      />
+                    ) : (
+                      <pre className="whitespace-pre-wrap font-mono text-sm leading-6">
+                        {dbUser?.data.bio}
+                      </pre>
+                    )}
                   </CardContent>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-15">
+                  <div
+                    className={`flex flex-col items-center justify-center h-15`}
+                  >
                     {isOwner ? (
                       <p>You haven't added any bio</p>
                     ) : (
                       <p>This user hasn't added any bio</p>
                     )}
                     <div className="text-muted-foreground text-sm text-center">
-                      {isOwner && (
-                        <p>
-                          Click on pencil icon on top right corner to add bio.
-                        </p>
-                      )}
+                      {isOwner && <p>Click here to add bio.</p>}
                     </div>
                   </div>
                 )}
               </Card>
             )}
-            {isLoading ? (
+            {loading ? (
               <Skeleton className="w-30 mr-auto h-5 mt-6" />
             ) : (
               <h1 className="font-medium text-left w-full mt-5">
                 {isOwner ? "Your Orbits" : "Orbits"}
               </h1>
             )}
-            {isPending ? (
+            {loading ? (
               <div className="grid grid-cols-2 gap-4 w-full lg:h-60 shrink-0">
                 <Skeleton className="w-full shrink-0 h-25 rounded-xl" />
                 <Skeleton className="w-full shrink-0 h-25 rounded-xl" />
@@ -205,7 +289,7 @@ const UserProfile = ({ username }: { username: string }) => {
         {/* ORBITS PATH ------- */}
         {isOrbitsPath && (
           <div className="flex flex-col items-center w-full h-full pt-5 pb-20">
-            {isLoading ? (
+            {loading ? (
               <div className="flex items-center gap-5 justify-between w-full">
                 <Skeleton className="w-full h-9" />
                 <Skeleton className="w-40 h-9" />
@@ -232,7 +316,7 @@ const UserProfile = ({ username }: { username: string }) => {
               </div>
             )}
 
-            {!isPending && <Separator className="mt-5" />}
+            {!loading && <Separator className="mt-5" />}
 
             {orbits?.data?.orbits?.length === 0 && (
               <Card className="flex items-center justify-center min-w-full lg:min-h-120 p-0 mt-5">
@@ -259,7 +343,7 @@ const UserProfile = ({ username }: { username: string }) => {
                 </Empty>
               </Card>
             )}
-            {isPending ? (
+            {loading ? (
               <div className="grid gap-4 w-full h-full mt-5">
                 <Skeleton className="w-full shrink-0 h-28 rounded-xl" />
                 <Skeleton className="w-full shrink-0 h-28 rounded-xl" />
