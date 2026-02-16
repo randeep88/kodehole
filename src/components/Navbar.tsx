@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import NavbarDropdown from "./NavbarDropdown";
-import { BookOpen, Loader, Loader2, Orbit, Plus } from "lucide-react";
+import { BookOpen, Orbit } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ToggleTheme } from "./ToggleTheme";
 import {
@@ -15,14 +15,9 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { useUser } from "../hooks/useUser";
 
 const Navbar = () => {
-  const { user, isLoggedIn, isLoading } = useAuth();
-  const { user: dbUser, isPending } = useUser(user?.username);
-
-  console.log("user", user);
-  console.log("dbUser", dbUser);
+  const { user, dbUser, isLoggedIn, isLoading, isLoadingBoth } = useAuth();
 
   const url = useSearchParams();
   const pathname = usePathname();
@@ -44,7 +39,7 @@ const Navbar = () => {
           className="text-xl font-medium flex items-center gap-3"
         >
           <Image
-            src="/finallogo.jpg"
+            src="/finallogo.png"
             alt="Logo"
             width={20}
             height={20}
@@ -103,7 +98,7 @@ const Navbar = () => {
               </div>
             ) : (
               <div>
-                {isLoading || isPending ? (
+                {isLoading ? (
                   <Skeleton className="w-8 h-8 rounded-full" />
                 ) : (
                   <NavbarDropdown dbUser={dbUser} user={user} />
@@ -115,7 +110,7 @@ const Navbar = () => {
       </div>
       {isOrbitAndOverviewPath && (
         <div>
-          {isLoading || isPending ? (
+          {isLoadingBoth ? (
             <div className="w-full mt-3 flex items-center gap-5">
               <Skeleton className="w-20 h-8" />
               <Skeleton className="w-20 h-8" />

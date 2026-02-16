@@ -14,12 +14,8 @@ export const metadata: Metadata = {
   title: "kodehole",
   description: "A New Home for Your Code",
   icons: {
-    icon: [
-      { url: "/logo.jpg" },
-      { url: "/logo.jpg", sizes: "32x32", type: "image/jpg" },
-      { url: "/logo.jpg", sizes: "16x16", type: "image/jpg" },
-    ],
-    apple: "/logo.jpg",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
 };
 

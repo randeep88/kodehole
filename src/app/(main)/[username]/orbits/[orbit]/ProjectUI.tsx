@@ -77,8 +77,7 @@ export default function ProjectUI({
   snapshot: string;
 }) {
   const { theme } = useTheme();
-  const { user, isLoading } = useAuth();
-  const { user: dbUser } = useUser(user?.username!);
+  const { dbUser } = useAuth();
 
   const [path, setPath] = useState<string>(".kodehole.json");
 
@@ -124,7 +123,7 @@ export default function ProjectUI({
   }, [tree]);
 
   return (
-    <div className="flex h-[calc(100vh-64px)]">
+    <div className="flex h-[calc(100vh-70px)] scrollbar-thin">
       <div className="border-r w-[300px] flex flex-col">
         <div className="p-3">
           <div className="text-lg font-semibold mb-3 flex items-center gap-2">
