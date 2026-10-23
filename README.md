@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kodehole
+
+Version your code from the terminal. Every push from the CLI creates a new snapshot inside a project workspace (Orbit), so earlier versions are always preserved and can be browsed in the browser.
+
+<img width="1916" height="905" alt="image" src="https://github.com/user-attachments/assets/42b217f8-f9c4-4493-84b8-06e0255eb66f" />
+
+## Features
+
+- One-command push: run `kdh push <orbit-name>` and your code is saved as a new snapshot
+- CLI-first workflow: push your project straight from the terminal
+- Every push creates a new snapshot inside the same Orbit, and old snapshots are never overwritten
+- File-tree interface to browse the files of any snapshot in the browser
+- Google sign-in with Auth.js
+- Snapshot files stored on Cloudflare R2
+
+## Tech Stack
+
+| Area | Tools |
+|---|---|
+| Framework | Next.js (frontend and API routes), React, TypeScript |
+| UI | Tailwind CSS, shadcn/ui, React Arborist |
+| Database | MongoDB (Mongoose) |
+| CLI | Commander, Inquirer, Chalk |
+| Auth | Auth.js (Google), JWT |
+| Storage | Cloudflare R2 (S3-compatible API) |
+
+## How It Works
+
+1. Log in and create an Orbit (a project workspace).
+2. Run the CLI inside your project folder: `kdh push <orbit-name>`.
+3. The CLI zips your files and uploads them as a new snapshot.
+4. Open the Orbit in the browser and explore any snapshot in the file tree.
 
 ## Getting Started
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+git clone https://github.com/randeep88/kodehole.git
+cd kodehole
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a `.env.local` file in the root:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_BASE_URL=
+MONGODB_URI=
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
 
-## Learn More
+Start the app:
 
-To learn more about Next.js, take a look at the following resources:
+```
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open http://localhost:3000
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> Note: The hosted demo is currently offline because it depends on paid Cloudflare R2 storage. See the demo video above.
 
-## Deploy on Vercel
+## Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Randeep Singh: [GitHub](https://github.com/randeep88) | [LinkedIn](https://linkedin.com/in/randeep-singh88)
